@@ -1,5 +1,4 @@
 services:
-  # 1. Database in RAM 
   redis:
     image: redis:7-alpine
     container_name: redis_db
@@ -9,7 +8,6 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
-  # 2. API Backend (Python/FastAPI)
   backend:
     build: ./backend
     container_name: backend_api_service
@@ -17,14 +15,10 @@ services:
       - "8000:8000"
     environment:
       - REDIS_HOST=redis
-    volumes:
-      - ./data:/app/data
     depends_on:
       - redis
-    command: sh -c "python seed.py && uvicorn main:app --host 0.0.0.0 --port 8000"
     restart: unless-stopped
 
-  # 3. GraphQL Server (Node.js/Apollo)
   graphql:
     build: ./graphql
     container_name: graphql_api_service
@@ -36,7 +30,6 @@ services:
       - backend
     restart: unless-stopped
 
-  # 4. Frontend (React/Vite)
   frontend:
     build: ./frontend
     container_name: frontend_app

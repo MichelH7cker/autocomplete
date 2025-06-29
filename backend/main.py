@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import redis
 import os
+from unidecode import unidecode
 
 app = FastAPI()
 
-# configuração do CORS para permitir requisições de qualquer origem
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,28 +17,43 @@ app.add_middleware(
 redis_host = os.getenv("REDIS_HOST", "localhost")
 r = redis.Redis(host=redis_host, port=6379, db=0, decode_responses=True)
 
-SUGGESTIONS_KEY = "suggestions_v1"
+def normalize_text(text):
+    return unidecode(text.lower())
 
 @app.get("/suggestions")
 def get_suggestions(term: str):
+    print("\n--- INICIANDO BUSCA DETALHADA ---")
+    
     if not term:
+        print("-> Etapa 1: Termo de busca está vazio. Retornando [].")
         return []
+    
+    print(f"-> Etapa 1: Recebido termo de busca: '{term}'")
 
     try:
-        # O truque `\xff` é um caractere que representa o "final" do range da busca
-        results = r.zrangebylex(
-            SUGGESTIONS_KEY,
-            f"[{term.lower()}",
-            f"[{term.lower()}\xff"
-        )
-        
-        all_suggestions = r.zrange(SUGGESTIONS_KEY, 0, -1)
-        matches = [s for s in all_suggestions if s.lower().startswith(term.lower())]
+        normalized_term = normalize_text(term)
+        print(f"-> Etapa 2: Termo normalizado para: '{normalized_term}'")
 
-        return [{"text": suggestion} for suggestion in matches[:20]]
-    except Exception:
+        redis_key = f"idx:{normalized_term}"
+        print(f"-> Etapa 3: A chave a ser buscada no Redis é: '{redis_key}'")
+
+        key_exists = r.exists(redis_key)
+        if not key_exists:
+            print(f"-> ALERTA: A chave '{redis_key}' NÃO EXISTE no Redis. O seed.py pode não ter criado este índice.")
+        else:
+            print(f"-> SUCESSO: A chave '{redis_key}' foi encontrada no Redis.")
+
+        results = r.zrange(redis_key, 0, 19)
+        print(f"-> Etapa 5: O comando zrange retornou uma lista com {len(results)} itens.")
+        if results:
+            print(f"   -> Conteúdo do resultado: {results}")
+
+        response_data = [{"text": suggestion} for suggestion in results]
+        print(f"-> Etapa 6: Resposta final formatada com {len(response_data)} itens.")
+        print("--- FIM DA BUSCA ---")
+        return response_data
+
+    except Exception as e:
+        print(f"!!! OCORREU UM ERRO INESPERADO: {e}")
+        print("--- FIM DA BUSCA COM ERRO ---")
         return []
-
-@app.get("/health")
-def health_check():
-    return {"status": "ok", "service": "backend-api"}
