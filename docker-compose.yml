@@ -1,0 +1,50 @@
+services:
+  # 1. Database in RAM 
+  redis:
+    image: redis:7-alpine
+    container_name: redis_db
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # 2. API Backend (Python/FastAPI)
+  backend:
+    build: ./backend
+    container_name: backend_api_service
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - redis
+    command: sh -c "python seed.py && uvicorn main:app --host 0.0.0.0 --port 8000"
+    restart: unless-stopped
+
+  # 3. GraphQL Server (Node.js/Apollo)
+  graphql:
+    build: ./graphql
+    container_name: graphql_api_service
+    ports:
+      - "4000:4000"
+    environment:
+      - BACKEND_API_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # 4. Frontend (React/Vite)
+  frontend:
+    build: ./frontend
+    container_name: frontend_app
+    ports:
+      - "5173:80"
+    depends_on:
+      - graphql
+    restart: unless-stopped
+
+volumes:
+  redis_data:
