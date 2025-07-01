@@ -3,8 +3,15 @@ import json
 import os
 import time
 
-redis_host = os.getenv("REDIS_HOST", "localhost")
-r = redis.Redis(host=redis_host, port=6379, db=0, decode_responses=True)
+redis_url = os.getenv("REDIS_HOST")
+
+if not redis_url:
+    print("ERRO CRÍTICO: A variável de ambiente REDIS_HOST não está definida.")
+    exit(1)
+
+print(f"Redis: Conectando à instância em {redis_url}...")
+r = redis.from_url(redis_url, decode_responses=True)
+r.ping()
 
 SUGGESTIONS_KEY = "suggestions:ranking"
 

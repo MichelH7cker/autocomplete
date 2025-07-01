@@ -13,8 +13,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-redis_host = os.getenv("REDIS_HOST", "localhost")
-r = redis.Redis(host=redis_host, port=6379, db=0, decode_responses=True)
+redis_url = os.getenv("REDIS_HOST")
+if not redis_url:
+    raise RuntimeError("A variável de ambiente REDIS_HOST não está definida.")
+
+r = redis.from_url(redis_url, decode_responses=True)
 
 SUGGESTIONS_KEY = "suggestions:ranking"
 
