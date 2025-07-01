@@ -8,7 +8,6 @@ const GET_SUGGESTIONS = gql`
     }
   }
 `;
-
 const HighlightedText = ({ text, highlight }: { text: string; highlight: string }) => {
   if (!highlight.trim()) return <span>{text}</span>;
   const regex = new RegExp(`(${highlight})`, 'gi');
@@ -21,6 +20,7 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
     </span>
   );
 };
+
 
 export default function SearchAutocomplete() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,15 +38,15 @@ export default function SearchAutocomplete() {
     }
     const debounceTimer = setTimeout(() => {
       getSuggestions({ variables: { term: searchTerm } });
+      setListVisible(true);
     }, 150);
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, getSuggestions]);
-
+  
   useEffect(() => {
-    if (suggestions.length > 0) setListVisible(true);
-    else setListVisible(false);
     setActiveIndex(-1);
   }, [suggestions]);
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,8 +64,8 @@ export default function SearchAutocomplete() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // ... (a função handleKeyDown continua exatamente a mesma) ...
     if (!isListVisible || suggestions.length === 0) return;
-
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -104,7 +104,7 @@ export default function SearchAutocomplete() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => { if (suggestions.length > 0) setListVisible(true); }}
+            onFocus={() => { if (searchTerm.length >= 4) setListVisible(true); }}
             onKeyDown={handleKeyDown}
             placeholder="Digite sua busca..."
             className="flex-grow min-w-0 block w-full px-4 py-3 rounded-l-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -115,30 +115,36 @@ export default function SearchAutocomplete() {
         </div>
 
         {isListVisible && (
-          <div className="absolute top-full left-0 right-0 z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg">
+          <div className="absolute top-full left-0 right-0 z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg min-h-[50px]">
             {loading ? (
               <div className="px-4 py-2.5 text-gray-500 dark:text-gray-400">Buscando...</div>
             ) : (
-              <ul className="max-h-80 overflow-y-auto">
-                {suggestions.map((suggestion: { text: string }, index: number) => (
-                  <li
-                    key={index}
-                    onClick={() => handleSuggestionClick(suggestion.text)}
-                    ref={el => {
-                      if (index === activeIndex && el) {
-                        el.scrollIntoView({ block: 'nearest' });
-                      }
-                    }}
-                    className={`px-4 py-2.5 cursor-pointer text-gray-800 dark:text-gray-200 ${
-                      index === activeIndex
-                        ? 'bg-blue-100 dark:bg-blue-800'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <HighlightedText text={suggestion.text} highlight={searchTerm} />
-                  </li>
-                ))}
-              </ul>
+              suggestions.length > 0 ? (
+                <ul className="max-h-80 overflow-y-auto">
+                  {suggestions.map((suggestion: { text: string }, index: number) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion.text)}
+                      ref={el => {
+                        if (index === activeIndex && el) {
+                          el.scrollIntoView({ block: 'nearest' });
+                        }
+                      }}
+                      className={`px-4 py-2.5 cursor-pointer text-gray-800 dark:text-gray-200 ${
+                        index === activeIndex
+                          ? 'bg-blue-100 dark:bg-blue-800'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <HighlightedText text={suggestion.text} highlight={searchTerm} />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-4 py-2.5 text-gray-500 dark:text-gray-400">
+                  Nenhuma sugestão encontrada para "<strong>{searchTerm}</strong>"
+                </div>
+              )
             )}
           </div>
         )}
