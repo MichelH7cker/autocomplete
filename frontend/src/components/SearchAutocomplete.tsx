@@ -37,7 +37,7 @@ export default function SearchAutocomplete() {
     }
     const debounceTimer = setTimeout(() => {
       getSuggestions({ variables: { term: searchTerm } });
-    }, 300);
+    }, 100);
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, getSuggestions]);
 
