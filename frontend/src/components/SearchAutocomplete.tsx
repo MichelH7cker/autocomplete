@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { gql, useLazyQuery } from '@apollo/client';
+import { gql, useLazyQuery, useMutation } from '@apollo/client';
 
 const GET_SUGGESTIONS = gql`
   query GetSuggestions($term: String!) {
@@ -8,6 +8,13 @@ const GET_SUGGESTIONS = gql`
     }
   }
 `;
+
+const INCREMENT_SCORE = gql`
+  mutation IncrementScore($term: String!) {
+    incrementScore(term: $term)
+  }
+`;
+
 const HighlightedText = ({ text, highlight }: { text: string; highlight: string }) => {
   if (!highlight.trim()) return <span>{text}</span>;
   const regex = new RegExp(`(${highlight})`, 'gi');
@@ -29,6 +36,8 @@ export default function SearchAutocomplete() {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const [getSuggestions, { loading, data }] = useLazyQuery(GET_SUGGESTIONS);
+  const [incrementScore] = useMutation(INCREMENT_SCORE);
+  
   const suggestions = data?.getSuggestions || [];
 
   useEffect(() => {
@@ -42,11 +51,10 @@ export default function SearchAutocomplete() {
     }, 150);
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, getSuggestions]);
-  
+
   useEffect(() => {
     setActiveIndex(-1);
   }, [suggestions]);
-
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -61,11 +69,13 @@ export default function SearchAutocomplete() {
   const handleSuggestionClick = (text: string) => {
     setSearchTerm(text);
     setListVisible(false);
+    
+    incrementScore({ variables: { term: text } });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // ... (a função handleKeyDown continua exatamente a mesma) ...
     if (!isListVisible || suggestions.length === 0) return;
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -107,6 +117,7 @@ export default function SearchAutocomplete() {
             onFocus={() => { if (searchTerm.length >= 4) setListVisible(true); }}
             onKeyDown={handleKeyDown}
             placeholder="Digite sua busca..."
+            autoComplete="off"
             className="flex-grow min-w-0 block w-full px-4 py-3 rounded-l-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
           <button type="button" className="relative inline-flex items-center px-4 py-3 rounded-r-md border border-l-0 border-gray-300 bg-blue-500 text-white font-semibold dark:border-gray-600 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm">
@@ -125,6 +136,7 @@ export default function SearchAutocomplete() {
                     <li
                       key={index}
                       onClick={() => handleSuggestionClick(suggestion.text)}
+                      onMouseEnter={() => setActiveIndex(index)}
                       ref={el => {
                         if (index === activeIndex && el) {
                           el.scrollIntoView({ block: 'nearest' });
