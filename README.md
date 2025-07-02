@@ -11,6 +11,7 @@ Uma aplicação web completa que implementa uma funcionalidade de busca com suge
 - **Sugestões em Tempo Real:** As sugestões aparecem de forma reativa enquanto o usuário digita.
 - **Ranking por Popularidade:** O sistema "aprende" com o uso. As sugestões mais selecionadas sobem no ranking e aparecem primeiro.
 - **Navegação por Teclado:** Suporte completo para navegar (`▲`/`▼`), selecionar (`Enter`) e fechar (`Esc`) as sugestões usando o teclado.
+- **Busca Externa no Google:** O botão "BUSCAR" e a tecla `Enter` (quando nenhuma sugestão está selecionada) abrem uma nova aba com os resultados da busca do Google para o termo digitado.
 - **Feedback de UI:** Mensagens claras para "Buscando..." e "Nenhum resultado encontrado".
 - **Design Responsivo:** Interface adaptada para uma ótima experiência tanto em desktops quanto em dispositivos móveis.
 - **100% Containerizado:** Toda a aplicação (frontend, backend, GraphQL, banco de dados) sobe com um único comando.
