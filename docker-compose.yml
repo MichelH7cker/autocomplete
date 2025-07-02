@@ -14,7 +14,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+      - CORS_ORIGIN=http://localhost:5173
     depends_on:
       - redis
     restart: unless-stopped
@@ -26,12 +27,16 @@ services:
       - "4000:4000"
     environment:
       - BACKEND_API_URL=http://backend:8000
+      - CORS_ORIGIN=http://localhost:5173
     depends_on:
       - backend
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - VITE_GRAPHQL_URI=http://localhost:4000/graphql
     container_name: frontend_app
     ports:
       - "5173:80"

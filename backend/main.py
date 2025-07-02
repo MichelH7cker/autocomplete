@@ -7,16 +7,15 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[os.getenv("CORS_ORIGIN", "*")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-redis_url = os.getenv("REDIS_HOST")
+redis_url = os.getenv("REDIS_URL")
 if not redis_url:
-    raise RuntimeError("A variável de ambiente REDIS_HOST não está definida.")
-
+    raise ValueError("A variável de ambiente REDIS_URL não foi definida.")
 r = redis.from_url(redis_url, decode_responses=True)
 
 SUGGESTIONS_KEY = "suggestions:ranking"
@@ -54,7 +53,6 @@ async def increment_suggestion_score(payload: dict = Body(...)):
     term = payload.get("term")
     if not term:
         return {"status": "error", "message": "Termo não fornecido"}
-    
     try:
         r.zincrby(SUGGESTIONS_KEY, 1, term)
         return {"status": "success", "term": term}
