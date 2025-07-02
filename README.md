@@ -4,7 +4,7 @@ Uma aplicação web completa que implementa uma funcionalidade de busca com suge
 
 **[➡️ Acesse a demonstração ao vivo aqui!](https://autocomplete-michelheckerfaria.onrender.com/)**
 
-![Demonstração da Aplicação](https://imgur.com/a/NbPjO6v)
+![Demonstração da Aplicação](https://i.imgur.com/ABp8kkB.png)
 
 ## ✨ Funcionalidades Principais
 
