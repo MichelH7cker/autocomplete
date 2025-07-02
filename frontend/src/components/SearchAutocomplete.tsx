@@ -1,3 +1,5 @@
+// frontend/src/components/SearchAutocomplete.tsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { gql, useLazyQuery, useMutation } from '@apollo/client';
 
@@ -28,7 +30,6 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
   );
 };
 
-
 export default function SearchAutocomplete() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isListVisible, setListVisible] = useState(false);
@@ -48,7 +49,7 @@ export default function SearchAutocomplete() {
     const debounceTimer = setTimeout(() => {
       getSuggestions({ variables: { term: searchTerm } });
       setListVisible(true);
-    }, 50);
+    }, 150);
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, getSuggestions]);
 
@@ -69,13 +70,29 @@ export default function SearchAutocomplete() {
   const handleSuggestionClick = (text: string) => {
     setSearchTerm(text);
     setListVisible(false);
-    
     incrementScore({ variables: { term: text } });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isListVisible || suggestions.length === 0) return;
+  const handleGoogleSearch = () => {
+    const query = searchTerm.trim();
+    if (!query) return;
+    const encodedQuery = encodeURIComponent(query);
+    const googleSearchUrl = `https://www.google.com/search?q=${encodedQuery}`;
+    window.open(googleSearchUrl, '_blank', 'noopener,noreferrer');
+  };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Se a lista não está visível, deixa o Enter funcionar normalmente (ou para outras funções)
+    if (!isListVisible) {
+        // Se Enter for pressionado com a lista fechada, busca no Google
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleGoogleSearch();
+        }
+        return;
+    }
+
+    // Lógica para quando a lista está visível
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -86,9 +103,13 @@ export default function SearchAutocomplete() {
         setActiveIndex(prevIndex => (prevIndex - 1 + suggestions.length) % suggestions.length);
         break;
       case 'Enter':
+        e.preventDefault(); // Previne qualquer comportamento padrão do Enter
         if (activeIndex >= 0) {
-          e.preventDefault();
+          // Se um item está selecionado, usa a sugestão
           handleSuggestionClick(suggestions[activeIndex].text);
+        } else {
+          // Se nenhum item estiver selecionado, faz a busca no Google
+          handleGoogleSearch();
         }
         break;
       case 'Escape':
@@ -120,8 +141,12 @@ export default function SearchAutocomplete() {
             autoComplete="off"
             className="flex-grow min-w-0 block w-full px-4 py-3 rounded-l-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
-          <button type="button" className="relative inline-flex items-center px-4 py-3 rounded-r-md border border-l-0 border-gray-300 bg-blue-500 text-white font-semibold dark:border-gray-600 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm">
-            BUSCAR
+          <button 
+            type="button" 
+            onClick={handleGoogleSearch}
+            className="relative inline-flex items-center px-4 py-3 rounded-r-md border border-l-0 border-gray-300 bg-blue-500 text-white font-semibold dark:border-gray-600 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm"
+          >
+            GOOGLE 
           </button>
         </div>
 
