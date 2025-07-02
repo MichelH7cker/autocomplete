@@ -90,7 +90,7 @@ Além dos requisitos básicos do desafio, implementei as seguintes melhorias par
 
 * **Fonte de Dados Robusta:** Substituí a lista inicial de dados por um dicionário completo da língua portuguesa, extraído de fontes acadêmicas, tornando as sugestões muito mais ricas.
 * **Ranking de Frequência:** Implementei a funcionalidade de ordenação de sugestões por popularidade, onde o score é atualizado a cada clique do usuário, tornando a busca mais inteligente.
-* **Experiência de Usuário Aprimorada:** Adicionei navegação completa por teclado (setas, Enter, Esc), feedback visual para o item ativo, uma mensagem clara para buscas sem resultado e ajustei o `debounce` para uma resposta mais rápida e fluida.
+* **Busca Externa e Ação da Tecla Enter:** Para completar o ciclo de interação do usuário, o botão "BUSCAR" foi implementado para acionar uma busca no Google com o termo digitado, abrindo os resultados em uma nova aba. A mesma funcionalidade foi adicionada à tecla `Enter`, que agora realiza a busca se nenhuma sugestão estiver selecionada, criando um comportamento intuitivo e esperado.
 
 ---
 
