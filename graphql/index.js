@@ -1,5 +1,8 @@
 import { ApolloServer } from '@apollo/server';
-import { startStandaloneServer } from '@apollo/server/standalone';
+import { expressMiddleware } from '@apollo/server/express4';
+import express from 'express';
+import cors from 'cors';
+import http from 'http';
 import axios from 'axios';
 
 const typeDefs = `#graphql
@@ -29,11 +32,10 @@ const resolvers = {
         return response.data;
       } catch (error) {
         console.error('GraphQL Query Error:', error.message);
-        return [];
+        throw new Error('Falha ao buscar sugestões no serviço de backend.');
       }
     },
   },
-
   Mutation: {
     incrementScore: async (_, { term }) => {
       try {
@@ -41,12 +43,34 @@ const resolvers = {
         return "Success";
       } catch (error) {
         console.error('GraphQL Mutation Error:', error.message);
-        return "Error";
+        throw new Error('Falha ao incrementar score no serviço de backend.');
       }
     },
   },
 };
 
-const server = new ApolloServer({ typeDefs, resolvers });
-const { url } = await startStandaloneServer(server, { listen: { port: 4000 } });
-console.log(`🚀 GraphQL Server pronto em: ${url}`);
+const app = express();
+const httpServer = http.createServer(app);
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+await server.start();
+
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'graphql-api' });
+});
+
+app.use(
+  '/graphql',
+  cors({ origin: [corsOrigin, 'https://studio.apollographql.com'] }),
+  express.json(),
+  expressMiddleware(server),
+);
+
+await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
+console.log(`🚀 GraphQL Server pronto em http://localhost:4000/graphql`);

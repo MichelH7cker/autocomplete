@@ -20,6 +20,10 @@ r = redis.from_url(redis_url, decode_responses=True)
 
 SUGGESTIONS_KEY = "suggestions:ranking"
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
 @app.get("/suggestions")
 def get_suggestions(term: str):
     if not term:
