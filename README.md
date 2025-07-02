@@ -2,11 +2,9 @@
 
 Uma aplicação web completa que implementa uma funcionalidade de busca com sugestões em tempo real (autocompletar), construída com uma arquitetura moderna e containerizada.
 
-**[➡️ Acesse a demonstração ao vivo aqui!](https://SEU-LINK-DO-FRONTEND.onrender.com)**
-*(Lembre-se de substituir pelo link do seu frontend no Render)*
+**[➡️ Acesse a demonstração ao vivo aqui!](https://autocomplete-michelheckerfaria.onrender.com/)**
 
-![Demonstração da Aplicação](https://i.imgur.com/image_dff271.png)
-*(Sugestão: tire uma captura de tela da sua aplicação funcionando e substitua o link acima para deixar o README ainda mais profissional)*
+![Demonstração da Aplicação](https://imgur.com/a/NbPjO6v)
 
 ## ✨ Funcionalidades Principais
 
@@ -42,8 +40,8 @@ Qualquer pessoa com Docker instalado pode rodar este projeto com um único coman
 
 1.  **Clone o repositório:**
     ```bash
-    git clone [https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git](https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git)
-    cd SEU_REPOSITORIO
+    git clone https://github.com/MichelH7cker/autocomplete
+    cd autocomplete 
     ```
 
 2.  **Suba os containers:**
